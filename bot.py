@@ -130,9 +130,9 @@ def look_for(msg):
     bot.send_message(user_id, "❗ Sizning yoshingizga mos odam topilmadi.\n"
                               "Biroz kuting, balki hozir oflayn bo‘lishi mumkin.")
 
-# ----------------------------------------
+# ------------------------
 # FORWARD TEXT
-# ----------------------------------------
+# ------------------------
 @bot.message_handler(content_types=['text'])
 def chat_text(msg):
     user_id = msg.chat.id
@@ -145,9 +145,9 @@ def chat_text(msg):
     if partner:
         bot.send_message(partner, "👤≈ Sobesednik:\n" + msg.text)
 
-# ----------------------------------------
+# ------------------------
 # FORWARD MEDIA
-# ----------------------------------------
+# ------------------------
 @bot.message_handler(content_types=['photo', 'video', 'voice', 'audio', 'document', 'sticker'])
 def media_forward(msg):
     user_id = msg.chat.id
@@ -171,9 +171,9 @@ def media_forward(msg):
     elif msg.content_type == 'document':
         bot.send_document(partner, msg.document.file_id)
 
-# ----------------------------------------
+# ------------------------
 # FLASK + WEBHOOK (Render uchun)
-# ----------------------------------------
+# ------------------------
 app = Flask(__name__)
 
 @app.route('/' + TOKEN, methods=['POST'])
@@ -190,5 +190,5 @@ def home():
 if __name__ == '__main__':
     bot.remove_webhook()
     bot.set_webhook(url=f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}")
-    port = int(os.environ.get("PORT", 10000))  # Render port
+    port = int(os.environ.get("PORT", 5000))  # Render port
     app.run(host='0.0.0.0', port=port)
