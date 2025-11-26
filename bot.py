@@ -1,7 +1,9 @@
 import telebot
 from telebot import types
+import os
+from flask import Flask, request
 
-TOKEN = "8083599108:AAF9MJjn-lppxhzSSJ46X30bNSBNS1XSZiM"
+TOKEN = os.getenv("BOT_TOKEN")
 bot = telebot.TeleBot(TOKEN)
 
 users = {}
@@ -100,26 +102,20 @@ def look_for(msg):
 
     bot.send_message(user_id, "🔎 Sobesednik qidirilmoqda...")
 
-    # TRY TO FIND MATCH
     for other_id in waiting:
         other = users[other_id]
 
-        # 1) gender check
         if user["looking_for"] != "any" and user["looking_for"] != other["gender"]:
             continue
         if other["looking_for"] != "any" and other["looking_for"] != user["gender"]:
             continue
-
-        # 2) age check
         if user["age"] != other["age"]:
             continue
 
-        # MATCH FOUND
         waiting.remove(other_id)
 
         user["partner"] = other_id
         other["partner"] = user_id
-
         user["status"] = "in_chat"
         other["status"] = "in_chat"
 
@@ -127,7 +123,6 @@ def look_for(msg):
         bot.send_message(other_id, "🎉 Sobesednik topildi! Chat boshlang.")
         return
 
-    # IF NOT FOUND → ADD TO WAIT LIST
     waiting.append(user_id)
     user["status"] = "search"
 
@@ -147,10 +142,10 @@ def chat_text(msg):
 
     partner = user["partner"]
     if partner:
-        bot.send_message(partner, "❖ Sobesednik:\n" + msg.text)
+        bot.send_message(partner, "👤≈ Sobesednik:\n" + msg.text)
 
 # ----------------------------------------
-# FORWARD MEDIA (FULL ANONYMITY)
+# FORWARD MEDIA
 # ----------------------------------------
 @bot.message_handler(content_types=['photo', 'video', 'voice', 'audio', 'document', 'sticker'])
 def media_forward(msg):
@@ -164,23 +159,34 @@ def media_forward(msg):
 
     if msg.content_type == 'sticker':
         bot.send_sticker(partner, msg.sticker.file_id)
-
     elif msg.content_type == 'voice':
         bot.send_voice(partner, msg.voice.file_id)
-
     elif msg.content_type == 'photo':
         bot.send_photo(partner, msg.photo[-1].file_id)
-
     elif msg.content_type == 'video':
         bot.send_video(partner, msg.video.file_id)
-
     elif msg.content_type == 'audio':
         bot.send_audio(partner, msg.audio.file_id)
-
     elif msg.content_type == 'document':
         bot.send_document(partner, msg.document.file_id)
 
 # ----------------------------------------
-# RUN BOT
+# FLASK + WEBHOOK (Render uchun)
 # ----------------------------------------
-bot.polling(none_stop=True)
+app = Flask(__name__)
+
+@app.route('/' + TOKEN, methods=['POST'])
+def webhook():
+    data = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(data)
+    bot.process_new_updates([update])
+    return '', 200
+
+@app.route('/')
+def home():
+    return "Bot is running!", 200
+
+if __name__ == '__main__':
+    bot.remove_webhook()
+    bot.set_webhook(url=f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}")
+    app.run(host='0.0.0.0', port=10000)
