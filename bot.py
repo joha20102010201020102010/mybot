@@ -4,7 +4,7 @@ import os
 from flask import Flask, request
 
 # 🔹 Tokenni muhit o'zgaruvchisidan olamiz
-TOKEN = os.getenv("BOT_TOKEN")
+TOKEN = "8083599108:AAF9MJjn-lppxhzSSJ46X30bNSBNS1XSZiM"
 bot = telebot.TeleBot(TOKEN)
 
 users = {}
