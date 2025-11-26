@@ -3,7 +3,8 @@ from telebot import types
 import os
 from flask import Flask, request
 
-TOKEN = ("8083599108:AAF9MJjn-lppxhzSSJ46X30bNSBNS1XSZiM")
+# 🔹 Tokenni muhit o'zgaruvchisidan olamiz
+TOKEN = os.getenv("BOT_TOKEN")
 bot = telebot.TeleBot(TOKEN)
 
 users = {}
@@ -189,4 +190,5 @@ def home():
 if __name__ == '__main__':
     bot.remove_webhook()
     bot.set_webhook(url=f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}")
-    app.run(host='0.0.0.0', port=10000)
+    port = int(os.environ.get("PORT", 10000))  # Render port
+    app.run(host='0.0.0.0', port=port)
